@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>記憶翻牌 — MiniGame Hub</title>
+  <meta name="description" content="免費線上記憶翻牌:翻開卡片找出相同配對,用最少次數完成。鍛鍊記憶力,手機電腦都能玩。" />
+  <meta name="theme-color" content="#0d0f15" />
+  <link rel="icon" href="favicon.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__logo">🎮</span>
+        <span>MiniGame <b>Hub</b></span>
+      </a>
+      <nav class="nav__links"><a class="nav__link" href="index.html#games">全部遊戲</a></nav>
+    </div>
+  </header>
+
+  <main class="game-page">
+    <div class="game-head">
+      <a class="back" href="index.html">← 返回</a>
+      <h1>🃏 記憶翻牌</h1>
+    </div>
+
+    <div class="game-shell">
+      <div class="game-score">
+        <div class="score-box"><div class="score-box__label">步數</div><div class="score-box__value" id="moves">0</div></div>
+        <div class="score-box"><div class="score-box__label">已配對</div><div class="score-box__value" id="matched">0/8</div></div>
+        <div class="score-box"><div class="score-box__label">最佳(最少步)</div><div class="score-box__value" id="best">—</div></div>
+      </div>
+
+      <div class="game-area overlay">
+        <div class="mem-grid" id="grid"></div>
+        <div class="overlay__panel is-hidden" id="overlay">
+          <h2 class="overlay__title">🎉 完成了!</h2>
+          <p class="overlay__text" id="ov-text"></p>
+          <button class="btn btn--primary" id="restartBtn">再玩一次</button>
+        </div>
+      </div>
+
+      <div class="game-controls">
+        <button class="btn btn--ghost btn--sm" id="newBtn">🔄 重新開始</button>
+      </div>
+
+      <p class="tip">翻開兩張卡片,找出相同的配對。步數越少越厲害!</p>
+    </div>
+
+    <div class="ad-slot"></div>
+  </main>
+
+  <script src="js/ads.js" defer></script>
+  <script>
+  (function () {
+    "use strict";
+    var EMOJI = ["🍎", "🐶", "🌈", "🚀", "⭐", "🎸", "🍕", "⚽"];
+    var grid = document.getElementById("grid");
+    var movesEl = document.getElementById("moves");
+    var matchedEl = document.getElementById("matched");
+    var bestEl = document.getElementById("best");
+    var overlay = document.getElementById("overlay");
+    var ovText = document.getElementById("ov-text");
+    var restartBtn = document.getElementById("restartBtn");
+    var newBtn = document.getElementById("newBtn");
+
+    var first = null;       // first flipped card (element)
+    var lock = false;        // lock during the flip-back delay
+    var moves = 0;
+    var matched = 0;
+    var best = +(localStorage.getItem("mem_best") || 0);
+    bestEl.textContent = best ? best : "—";
+
+    function shuffle(arr) {
+      for (var i = arr.length - 1; i > 0; i--) {
+        var j = (Math.random() * (i + 1)) | 0;
+        var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      return arr;
+    }
+
+    function build() {
+      grid.innerHTML = "";
+      var deck = shuffle(EMOJI.concat(EMOJI).slice());  // 16, two of each
+      deck.forEach(function (icon) {
+        var card = document.createElement("button");
+        card.className = "mem-card";
+        card.setAttribute("aria-label", "翻牌");
+        card.dataset.icon = icon;
+        card.innerHTML =
+          '<span class="mem-card__inner">' +
+            '<span class="mem-card__face mem-card__face--back">?</span>' +
+            '<span class="mem-card__face mem-card__face--front">' + icon + '</span>' +
+          '</span>';
+        card.addEventListener("click", function () { onCard(card); });
+        grid.appendChild(card);
+      });
+    }
+
+    function onCard(card) {
+      if (lock) return;
+      if (card === first) return;
+      if (card.classList.contains("is-flipped") || card.classList.contains("is-matched")) return;
+
+      card.classList.add("is-flipped");
+
+      if (!first) { first = card; return; }
+
+      // second card
+      moves++;
+      movesEl.textContent = moves;
+      var a = first, b = card;
+      first = null;
+
+      if (a.dataset.icon === b.dataset.icon) {
+        a.classList.add("is-matched");
+        b.classList.add("is-matched");
+        matched++;
+        matchedEl.textContent = matched + "/8";
+        if (matched === 8) win();
+      } else {
+        lock = true;
+        setTimeout(function () {
+          a.classList.remove("is-flipped");
+          b.classList.remove("is-flipped");
+          lock = false;
+        }, 750);
+      }
+    }
+
+    function win() {
+      if (!best || moves < best) {
+        best = moves;
+        localStorage.setItem("mem_best", best);
+        bestEl.textContent = best;
+      }
+      setTimeout(function () {
+        ovText.textContent = "用了 " + moves + " 步就配對完成!" +
+          (moves <= best ? " 🏆 新紀錄!" : " (最佳 " + best + " 步)");
+        overlay.classList.remove("is-hidden");
+      }, 500);
+    }
+
+    function newGame() {
+      first = null;
+      lock = false;
+      moves = 0;
+      matched = 0;
+      movesEl.textContent = "0";
+      matchedEl.textContent = "0/8";
+      overlay.classList.add("is-hidden");
+      build();
+    }
+
+    restartBtn.addEventListener("click", newGame);
+    newBtn.addEventListener("click", newGame);
+
+    build();
+  })();
+  </script>
+</body>
+</html>

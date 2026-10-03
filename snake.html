@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>貪吃蛇 — MiniGame Hub</title>
+  <meta name="description" content="免費線上貪吃蛇:吃食物變長,別撞牆或自己。經典手眼協調遊戲,手機電腦都能玩。" />
+  <meta name="theme-color" content="#0d0f15" />
+  <link rel="icon" href="favicon.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__logo">🎮</span>
+        <span>MiniGame <b>Hub</b></span>
+      </a>
+      <nav class="nav__links"><a class="nav__link" href="index.html#games">全部遊戲</a></nav>
+    </div>
+  </header>
+
+  <main class="game-page">
+    <div class="game-head">
+      <a class="back" href="index.html">← 返回</a>
+      <h1>🐍 貪吃蛇</h1>
+    </div>
+
+    <div class="game-shell">
+      <div class="game-score">
+        <div class="score-box"><div class="score-box__label">分數</div><div class="score-box__value" id="score">0</div></div>
+        <div class="score-box"><div class="score-box__label">最高分</div><div class="score-box__value" id="best">0</div></div>
+      </div>
+
+      <div class="game-area overlay">
+        <canvas class="game-canvas" id="cv" width="360" height="360"></canvas>
+        <div class="overlay__panel" id="overlay">
+          <h2 class="overlay__title">🐍 貪吃蛇</h2>
+          <p class="overlay__text" id="ov-text">用方向鍵 / WASD / 滑動控制小蛇,吃食物變長。</p>
+          <button class="btn btn--primary" id="startBtn">開始遊戲</button>
+        </div>
+      </div>
+
+      <div class="dpad" id="dpad">
+        <button class="u" data-dir="up" aria-label="上">▲</button>
+        <button class="l" data-dir="left" aria-label="左">◀</button>
+        <span class="c"></span>
+        <button class="r" data-dir="right" aria-label="右">▶</button>
+        <button class="d" data-dir="down" aria-label="下">▼</button>
+      </div>
+
+      <p class="tip">吃到食物 +10 分,蛇會變長且速度加快。撞到牆或自己就結束。</p>
+    </div>
+
+    <div class="ad-slot"></div>
+  </main>
+
+  <script src="js/ads.js" defer></script>
+  <script>
+  (function () {
+    "use strict";
+    var GRID = 18;                       // 18x18 cells
+    var cv = document.getElementById("cv");
+    var ctx = cv.getContext("2d");
+    var CELL = cv.width / GRID;
+
+    var scoreEl = document.getElementById("score");
+    var bestEl = document.getElementById("best");
+    var overlay = document.getElementById("overlay");
+    var ovText = document.getElementById("ov-text");
+    var startBtn = document.getElementById("startBtn");
+    var dpad = document.getElementById("dpad");
+
+    var best = +(localStorage.getItem("snake_best") || 0);
+    bestEl.textContent = best;
+
+    var snake, dir, nextDir, food, score, speed, running, last, acc;
+
+    function reset() {
+      snake = [{ x: 8, y: 9 }, { x: 7, y: 9 }, { x: 6, y: 9 }];
+      dir = { x: 1, y: 0 };
+      nextDir = dir;
+      score = 0;
+      speed = 140;        // ms per step
+      acc = 0;
+      last = 0;
+      placeFood();
+      updateScore();
+    }
+
+    function placeFood() {
+      var occ = {};
+      snake.forEach(function (s) { occ[s.x + "," + s.y] = 1; });
+      var free = [];
+      for (var x = 0; x < GRID; x++)
+        for (var y = 0; y < GRID; y++)
+          if (!occ[x + "," + y]) free.push({ x: x, y: y });
+      food = free[(Math.random() * free.length) | 0] || null;
+    }
+
+    function updateScore() {
+      scoreEl.textContent = score;
+      if (score > best) { best = score; localStorage.setItem("snake_best", best); bestEl.textContent = best; }
+    }
+
+    function setDir(d) {
+      var map = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
+      var nd = map[d];
+      if (!nd) return;
+      // can't reverse into self
+      if (nd.x === -dir.x && nd.y === -dir.y) return;
+      nextDir = nd;
+    }
+
+    function step() {
+      dir = nextDir;
+      var head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      // wall
+      if (head.x < 0 || head.y < 0 || head.x >= GRID || head.y >= GRID) return gameOver();
+      // self (exclude tail cell, which moves away unless eating)
+      for (var i = 0; i < snake.length; i++)
+        if (snake[i].x === head.x && snake[i].y === head.y) return gameOver();
+
+      snake.unshift(head);
+      if (food && head.x === food.x && head.y === food.y) {
+        score += 10;
+        updateScore();
+        speed = Math.max(70, speed - 4);
+        placeFood();
+      } else {
+        snake.pop();
+      }
+    }
+
+    function draw() {
+      // board
+      ctx.fillStyle = "#12151d";
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      // subtle grid
+      ctx.strokeStyle = "rgba(255,255,255,0.03)";
+      ctx.lineWidth = 1;
+      for (var i = 1; i < GRID; i++) {
+        ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, cv.height); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(cv.width, i * CELL); ctx.stroke();
+      }
+      // food
+      if (food) {
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath();
+        ctx.arc(food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL * 0.32, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // snake
+      snake.forEach(function (s, idx) {
+        var isHead = idx === 0;
+        ctx.fillStyle = isHead ? "#22d3ee" : "#22c55e";
+        var pad = CELL * 0.12;
+        roundRect(s.x * CELL + pad, s.y * CELL + pad, CELL - pad * 2, CELL - pad * 2, CELL * 0.28);
+      });
+    }
+
+    function roundRect(x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.fill();
+    }
+
+    function gameOver() {
+      running = false;
+      cancelAnimationFrame(raf);
+      overlay.classList.remove("is-hidden");
+      overlay.querySelector(".overlay__title").textContent = "遊戲結束";
+      ovText.textContent = "分數 " + score + (score >= best && score > 0 ? " — 新紀錄!" : "");
+      startBtn.textContent = "再玩一次";
+    }
+
+    function loop(t) {
+      if (!running) return;
+      if (!last) last = t;
+      var dt = t - last;
+      last = t;
+      acc += dt;
+      while (acc >= speed) { acc -= speed; step(); if (!running) return; }
+      draw();
+      raf = requestAnimationFrame(loop);
+    }
+
+    var raf;
+    function start() {
+      reset();
+      overlay.classList.add("is-hidden");
+      running = true;
+      last = 0; acc = 0;
+      draw();
+      raf = requestAnimationFrame(loop);
+    }
+
+    // input: keyboard
+    var KEYMAP = {
+      ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
+      w: "up", s: "down", a: "left", d: "right",
+      W: "up", S: "down", A: "left", D: "right"
+    };
+    document.addEventListener("keydown", function (e) {
+      if (e.key === " " || e.key === "Enter") { if (!running) { e.preventDefault(); start(); } return; }
+      var d = KEYMAP[e.key];
+      if (!d) return;
+      e.preventDefault();
+      if (running) setDir(d);
+    });
+
+    // input: swipe
+    var touch = null;
+    cv.addEventListener("touchstart", function (e) {
+      touch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, { passive: true });
+    cv.addEventListener("touchend", function (e) {
+      if (!touch) return;
+      var dx = e.changedTouches[0].clientX - touch.x;
+      var dy = e.changedTouches[0].clientY - touch.y;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) { touch = null; return; }
+      setDir(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
+      touch = null;
+    });
+
+    // d-pad
+    dpad.querySelectorAll("button").forEach(function (b) {
+      b.addEventListener("click", function () { if (running) setDir(b.getAttribute("data-dir")); });
+    });
+
+    startBtn.addEventListener("click", start);
+
+    // initial idle draw
+    reset();
+    draw();
+  })();
+  </script>
+</body>
+</html>

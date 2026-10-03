@@ -1,0 +1,12 @@
+# Secrets — never commit credentials
+key.txt
+*.key
+.env
+
+# Node
+node_modules/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini

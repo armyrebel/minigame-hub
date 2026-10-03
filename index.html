@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MiniGame Hub — 免費線上小遊戲</title>
+  <meta name="description" content="MiniGame Hub 收錄多款免費線上小遊戲:2048、貪吃蛇、跳躍鳥、記憶翻牌。免下載、免安裝,打開瀏覽器就能玩。" />
+  <meta name="theme-color" content="#0d0f15" />
+  <link rel="icon" href="favicon.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__logo">🎮</span>
+        <span>MiniGame <b>Hub</b></span>
+      </a>
+      <nav class="nav__links">
+        <a class="nav__link is-active" href="index.html#games">遊戲</a>
+        <a class="nav__link" href="index.html#about">關於</a>
+        <a class="nav__link nav__link--cta" href="index.html#games">開始玩</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <span class="hero__badge"><span class="dot"></span> 全免費 · 免下載 · 即點即玩</span>
+      <h1 class="hero__title">打開瀏覽器,<br /><em>馬上開始玩</em></h1>
+      <p class="hero__sub">
+        精選多款經典小遊戲,手機、電腦都能玩。沒有廣告擋住操作,廣告放在遊戲之外,
+        玩起來順順利利。
+      </p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#games">🎮 選擇遊戲</a>
+        <a class="btn btn--ghost" href="#about">了解這個網站</a>
+      </div>
+    </section>
+
+    <div class="ad-slot" data-ad-format="auto"></div>
+
+    <section class="section" id="games">
+      <div class="section__head">
+        <h2 class="section__title">選擇一個遊戲</h2>
+        <span class="section__sub">4 款上線中,持續加入中</span>
+      </div>
+
+      <div class="grid">
+        <a class="card" href="2048.html">
+          <div class="card__top">
+            <span class="card__icon">🧩</span>
+            <span class="card__tag">益智</span>
+          </div>
+          <h3 class="card__title">2048</h3>
+          <p class="card__desc">合併相同數字,朝 2048 前進。考驗規劃與空間感,越玩越上癮。</p>
+          <span class="card__play">開始遊戲</span>
+        </a>
+
+        <a class="card" href="snake.html">
+          <div class="card__top">
+            <span class="card__icon">🐍</span>
+            <span class="card__tag">經典</span>
+          </div>
+          <h3 class="card__title">貪吃蛇</h3>
+          <p class="card__desc">控制小蛇吃食物、變長,別撞到牆或自己的尾巴。手眼協調的最佳訓練。</p>
+          <span class="card__play">開始遊戲</span>
+        </a>
+
+        <a class="card" href="flappy.html">
+          <div class="card__top">
+            <span class="card__icon">🐤</span>
+            <span class="card__tag">反應</span>
+          </div>
+          <h3 class="card__title">跳躍鳥</h3>
+          <p class="card__desc">點一下飛一下,躲過一格格水管。看似簡單,想拿高分真的難。</p>
+          <span class="card__play">開始遊戲</span>
+        </a>
+
+        <a class="card" href="memory.html">
+          <div class="card__top">
+            <span class="card__icon">🃏</span>
+            <span class="card__tag">記憶</span>
+          </div>
+          <h3 class="card__title">記憶翻牌</h3>
+          <p class="card__desc">翻開卡片、找出相同的配對。花最少的次數完成,鍛鍊你的記憶力。</p>
+          <span class="card__play">開始遊戲</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="about">
+        <h3>關於 MiniGame Hub</h3>
+        <p>
+          這是一個純前端的小遊戲網站——<b>免下載、免註冊、完全免費</b>。
+          所有遊戲都是直接用 HTML、CSS、JavaScript 寫成,打開就能玩,你的遊戲記錄只保存在自己的瀏覽器裡,不會上傳任何資料。
+        </p>
+        <p>
+          我們依靠 <b>Google AdSense</b> 廣告來維運網站、開發更多遊戲。廣告放在遊戲畫面之外,
+          不影響操作;你也可以在支援的瀏覽器中使用廣告阻擋工具。
+        </p>
+        <p>
+          想要推薦遊戲或發現 bug?歡迎透過
+          <a href="mailto:hello@example.com" style="color:var(--accent-2);font-weight:700">hello@example.com</a>
+          告訴我們。
+        </p>
+      </div>
+    </section>
+
+    <div class="ad-slot ad-slot--tall"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="brand" style="font-size:1rem">
+        <span class="brand__logo">🎮</span>
+        <span>MiniGame <b style="color:var(--accent-2)">Hub</b></span>
+      </div>
+      <div class="footer__links">
+        <a href="index.html#games">遊戲</a>
+        <a href="privacy.html">隱私權政策</a>
+        <a href="mailto:hello@example.com">聯絡</a>
+      </div>
+    </div>
+    <div class="footer__inner" style="justify-content:flex-start;margin-top:14px;border:none">
+      <p class="footer__note">
+        © 2026 MiniGame Hub。本站為免費遊戲平台,透過 Google AdSense 顯示廣告以支持營運。
+      </p>
+    </div>
+  </footer>
+
+  <script src="js/ads.js" defer></script>
+</body>
+</html>
